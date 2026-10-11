@@ -1,0 +1,548 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ülkeler ve Başkentler Bilgi Yarışması</title>
+    <!-- Tailwind CSS for modern design -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Google Fonts: Inter -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .animate-fade-in {
+            animation: fadeIn 0.4s ease-out forwards;
+        }
+    </style>
+</head>
+<body class="bg-gradient-to-br from-slate-900 via-indigo-950 to-slate-900 text-slate-100 min-h-screen flex items-center justify-center p-4">
+
+    <div id="app" class="w-full max-w-2xl bg-slate-900/80 backdrop-blur-xl border border-slate-800 rounded-2xl shadow-2xl overflow-hidden">
+        
+        <!-- Header -->
+        <header class="bg-slate-800/50 border-b border-slate-700/50 p-6 text-center">
+            <h1 class="text-2xl md:text-3xl font-extrabold bg-gradient-to-r from-indigo-400 to-cyan-400 bg-clip-text text-transparent">
+                🌍 Dünya Başkentleri Yarışması
+            </h1>
+            <p class="text-sm text-slate-400 mt-1">Coğrafi bilginizi test edin ve kendinizi geliştirin!</p>
+        </header>
+
+        <!-- Main Content Area -->
+        <main class="p-6 md:p-8">
+
+            <!-- SCREEN 1: Setup Screen -->
+            <div id="setup-screen" class="space-y-6 animate-fade-in">
+                <div class="bg-indigo-950/40 border border-indigo-500/20 rounded-xl p-5 text-center space-y-3">
+                    <p class="text-slate-300">Sistemimizde toplam <span id="total-country-count" class="font-bold text-cyan-400">0</span> ülke bulunmaktadır.</p>
+                    
+                    <!-- Kıta Seçim Alanı -->
+                    <div class="flex flex-col sm:flex-row items-center justify-center gap-2 mt-2">
+                        <label for="continent-select" class="text-sm font-medium text-slate-300">Kıta Seçimi:</label>
+                        <select id="continent-select" onchange="onContinentChange()" class="bg-slate-800 border border-slate-700 text-slate-200 text-sm rounded-xl px-4 py-2 focus:outline-none focus:border-indigo-500">
+                            <option value="Tümü">Tüm Kıtalar</option>
+                            <option value="AVRUPA">Avrupa</option>
+                            <option value="ASYA">Asya</option>
+                            <option value="AFRİKA">Afrika</option>
+                            <option value="KUZEY VE ORTA AMERİKA">Kuzey ve Orta Amerika</option>
+                            <option value="GÜNEY AMERİKA">Güney Amerika</option>
+                            <option value="AVUSTRALYA / OKYANUSYA">Avustralya / Okyanusya</option>
+                            <option value="ANTARKTİKA">Antarktika</option>
+                        </select>
+                    </div>
+
+                    <p class="text-sm text-slate-400 pt-1">Lütfen çözmek istediğiniz soru sayısını seçin:</p>
+                </div>
+
+                <div id="question-buttons-container" class="grid grid-cols-2 sm:grid-cols-4 gap-3">
+                    <!-- Dinamik soru butonları buraya gelecek -->
+                </div>
+            </div>
+
+            <!-- SCREEN 2: Quiz Screen -->
+            <div id="quiz-screen" class="hidden space-y-6 animate-fade-in">
+                <!-- Status Bar -->
+                <div class="flex justify-between items-center text-sm font-medium text-slate-400 border-b border-slate-800 pb-3">
+                    <span id="question-counter">Soru 1/10</span>
+                    <div class="flex items-center gap-4">
+                        <span>Puan: <strong id="current-score" class="text-cyan-400 font-bold">0</strong></span>
+                    </div>
+                </div>
+
+                <!-- Question Card -->
+                <div class="bg-slate-800/40 border border-slate-700/60 rounded-2xl p-6 text-center shadow-inner">
+                    <span id="question-continent" class="text-xs uppercase tracking-wider bg-indigo-500/20 text-indigo-300 font-semibold px-3 py-1 rounded-full">Kıta</span>
+                    <h2 id="question-country" class="text-3xl font-extrabold mt-4 text-white tracking-wide">TÜRKİYE</h2>
+                    <p class="text-slate-400 text-sm mt-1">Bu ülkenin başkenti neresidir?</p>
+                </div>
+
+                <!-- Options Container -->
+                <div id="options-container" class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                    <!-- Dynamic option buttons inserted via JS -->
+                </div>
+            </div>
+
+            <!-- SCREEN 3: Result Screen -->
+            <div id="result-screen" class="hidden space-y-6 text-center animate-fade-in">
+                <div class="w-20 h-20 bg-indigo-500/20 border border-indigo-500/40 rounded-full flex items-center justify-center mx-auto text-4xl shadow-lg">
+                    🏆
+                </div>
+                <div>
+                    <h2 class="text-2xl font-bold text-white">Yarışma Tamamlandı!</h2>
+                    <p id="result-continent-info" class="text-sm text-indigo-400 mt-1"></p>
+                </div>
+
+                <div class="grid grid-cols-3 gap-3 bg-slate-800/50 border border-slate-700/60 rounded-xl p-4">
+                    <div>
+                        <p class="text-xs text-slate-400">Doğru</p>
+                        <p id="res-correct" class="text-xl font-bold text-emerald-400">0</p>
+                    </div>
+                    <div>
+                        <p class="text-xs text-slate-400">Yanlış</p>
+                        <p id="res-wrong" class="text-xl font-bold text-rose-400">0</p>
+                    </div>
+                    <div>
+                        <p class="text-xs text-slate-400">Toplam Puan</p>
+                        <p id="res-score" class="text-xl font-bold text-cyan-400">0</p>
+                    </div>
+                </div>
+
+                <div id="performance-message" class="text-sm font-medium text-indigo-300"></div>
+
+                <button onclick="resetApp()" class="w-full py-3 px-6 bg-gradient-to-r from-indigo-600 to-cyan-600 hover:from-indigo-500 hover:to-cyan-500 text-white font-semibold rounded-xl shadow-lg transition-all active:scale-95">
+                    Tekrar Oyna
+                </button>
+            </div>
+
+        </main>
+    </div>
+
+    <script>
+        // Ülkeler, başkentler ve kıtalar veri tabanı
+        const ulkelerVeritabani = [
+            { ulke: "AFGANİSTAN", baskent: "KABİL", kita: "ASYA" },
+            { ulke: "ALAND ADALARI", baskent: "MARİEHAMN", kita: "AVRUPA" },
+            { ulke: "ALMANYA", baskent: "BERLİN", kita: "AVRUPA" },
+            { ulke: "AMERİKA BİRLEŞİK DEVLETLERİ", baskent: "WASHİNGTON", kita: "KUZEY VE ORTA AMERİKA" },
+            { ulke: "AMERİKAN SAMOASI", baskent: "PAGO PAGO", kita: "AVUSTRALYA / OKYANUSYA" },
+            { ulke: "ANDORRA", baskent: "ANDORRA LA VELLA", kita: "AVRUPA" },
+            { ulke: "ANGOLA", baskent: "LUANDA", kita: "AFRİKA" },
+            { ulke: "ANGUİLLA", baskent: "THE VALLEY", kita: "KUZEY VE ORTA AMERİKA" },
+            { ulke: "ANTİGUA VE BARBUDA", baskent: "SAİNT JOHN'S", kita: "KUZEY VE ORTA AMERİKA" },
+            { ulke: "ARJANTİN", baskent: "BUENOS AİRES", kita: "GÜNEY AMERİKA" },
+            { ulke: "ARNAVUTLUK", baskent: "TİRAN", kita: "AVRUPA" },
+            { ulke: "ARUBA", baskent: "ORANJESTAD", kita: "KUZEY VE ORTA AMERİKA" },
+            { ulke: "AVUSTRALYA", baskent: "CANBERRA", kita: "AVUSTRALYA / OKYANUSYA" },
+            { ulke: "AVUSTURYA", baskent: "VİYANA", kita: "AVRUPA" },
+            { ulke: "AZERBEYCAN", baskent: "BAKÜ", kita: "ASYA" },
+            { ulke: "AZİZ PİERRE VE MİQUELON", baskent: "SAİNT-PİERRE", kita: "KUZEY VE ORTA AMERİKA" },
+            { ulke: "BAHAMALAR", baskent: "NASSAU", kita: "KUZEY VE ORTA AMERİKA" },
+            { ulke: "BAHREYN", baskent: "MANAMA", kita: "ASYA" },
+            { ulke: "BANGLADEŞ", baskent: "DHAKA", kita: "ASYA" },
+            { ulke: "BARBADOS", baskent: "BRİDGETOWN", kita: "KUZEY VE ORTA AMERİKA" },
+            { ulke: "BATI SAHRA", baskent: "LAAYOUNE / EL AAİUN", kita: "AFRİKA" },
+            { ulke: "BELARUS", baskent: "MİNSK", kita: "AVRUPA" },
+            { ulke: "BELİZE", baskent: "BELMOPAN", kita: "KUZEY VE ORTA AMERİKA" },
+            { ulke: "BELÇİKA", baskent: "BRÜKSEL", kita: "AVRUPA" },
+            { ulke: "BENİN", baskent: "PORTO-NOVO", kita: "AFRİKA" },
+            { ulke: "BERMUDA", baskent: "HAMİLTON", kita: "KUZEY VE ORTA AMERİKA" },
+            { ulke: "BİRLEŞİK ARAP EMİRLİKLERİ", baskent: "ABU DABİ", kita: "ASYA" },
+            { ulke: "BİRLEŞİK KRALLIK", baskent: "LONDRA", kita: "AVRUPA" },
+            { ulke: "BOLİVYA", baskent: "SUCRE", kita: "GÜNEY AMERİKA" },
+            { ulke: "BOSNA HERSEK", baskent: "SARAYBOSNA", kita: "AVRUPA" },
+            { ulke: "BOTSVANA", baskent: "GABORONE", kita: "AFRİKA" },
+            { ulke: "BREZİLYA", baskent: "BRASİLEİA", kita: "GÜNEY AMERİKA" },
+            { ulke: "BRİTANYA HİNT OKYANUSU BÖLGESİ", baskent: "DİEGO GARCİA", kita: "ASYA" },
+            { ulke: "BRUNEİ SULTANLIĞI", baskent: "BANDAR SERİ BEGAWAN", kita: "ASYA" },
+            { ulke: "BULGARİSTAN", baskent: "SOFYA", kita: "AVRUPA" },
+            { ulke: "BURKİNA FASO", baskent: "OUAGADOUGOU", kita: "AFRİKA" },
+            { ulke: "BURUNDİ", baskent: "BUJUMBURA", kita: "AFRİKA" },
+            { ulke: "BUTAN", baskent: "THİMPHU", kita: "ASYA" },
+            { ulke: "CAPE VERDE", baskent: "PRAİA", kita: "AFRİKA" },
+            { ulke: "CAYMAN ADALARI", baskent: "GEORGE TOWN", kita: "KUZEY VE ORTA AMERİKA" },
+            { ulke: "CEBELİTARIK", baskent: "CEBELİTARIK", kita: "AVRUPA" },
+            { ulke: "CEZAYİR", baskent: "CEZAYİR", kita: "AFRİKA" },
+            { ulke: "CHRİSTMAS ADASI", baskent: "FLYİNG FİSH COVE", kita: "ASYA" },
+            { ulke: "CİBUTİ", baskent: "CİBUTİ", kita: "AFRİKA" },
+            { ulke: "COCOS (KEELİNG) ADALARI", baskent: "WEST ISLAND", kita: "ASYA" },
+            { ulke: "COOK ADALARI", baskent: "AVARUA", kita: "AVUSTRALYA / OKYANUSYA" },
+            { ulke: "DANİMARKA", baskent: "KOPENHAG", kita: "AVRUPA" },
+            { ulke: "DOMİNİK CUMHURİYETİ", baskent: "SANTO DOMİNGO", kita: "KUZEY VE ORTA AMERİKA" },
+            { ulke: "DOMİNİKA", baskent: "ROSEAU", kita: "KUZEY VE ORTA AMERİKA" },
+            { ulke: "DOĞU TİMOR", baskent: "DİLİ", kita: "ASYA" },
+            { ulke: "EKVADOR", baskent: "QUİTO", kita: "GÜNEY AMERİKA" },
+            { ulke: "EKVATOR GİNESİ", baskent: "MALABO", kita: "AFRİKA" },
+            { ulke: "EL SALVADOR", baskent: "SAN SALVADOR", kita: "KUZEY VE ORTA AMERİKA" },
+            { ulke: "ENDONEZYA", baskent: "CAKARTA", kita: "ASYA" },
+            { ulke: "ERİTRE", baskent: "ASMARA", kita: "AFRİKA" },
+            { ulke: "ERMENİSTAN", baskent: "ERİVAN", kita: "ASYA" },
+            { ulke: "ESTONYA", baskent: "TALLİNN", kita: "AVRUPA" },
+            { ulke: "ETİYOPYA", baskent: "ADDİS ABABA", kita: "AFRİKA" },
+            { ulke: "FALKLAND ADALARI", baskent: "STANLEY", kita: "GÜNEY AMERİKA" },
+            { ulke: "FAROE ADALARI", baskent: "TORSHAVN", kita: "AVRUPA" },
+            { ulke: "FAS", baskent: "RABAT", kita: "AFRİKA" },
+            { ulke: "FİJİ", baskent: "SUVA", kita: "AVUSTRALYA / OKYANUSYA" },
+            { ulke: "FİLDİŞİ SAHİLİ", baskent: "YAMOUSSOUKRO", kita: "AFRİKA" },
+            { ulke: "FİLİPİNLER", baskent: "MANİLA", kita: "ASYA" },
+            { ulke: "FİLİSTİN", baskent: "DOĞU KUDÜS, RAMALLAH", kita: "ASYA" },
+            { ulke: "FİNLANDİYA", baskent: "HELSİNKİ", kita: "AVRUPA" },
+            { ulke: "FRANSA", baskent: "PARİS", kita: "AVRUPA" },
+            { ulke: "FRANSIZ GUYANASI", baskent: "CAYENNE", kita: "GÜNEY AMERİKA" },
+            { ulke: "FRANSIZ GÜNEY TOPRAKLARI", baskent: "PORT-AUX-FRANCAİS", kita: "ANTARKTİKA" },
+            { ulke: "FRANSIZ POLİNEZYASI", baskent: "PAPEETE", kita: "AVUSTRALYA / OKYANUSYA" },
+            { ulke: "GABON", baskent: "LİBREVİLLE", kita: "AFRİKA" },
+            { ulke: "GAMBİYA", baskent: "BANJUL", kita: "AFRİKA" },
+            { ulke: "GANA", baskent: "ACCRA", kita: "AFRİKA" },
+            { ulke: "GİNE", baskent: "CONAKRY", kita: "AFRİKA" },
+            { ulke: "GİNE-BİSSAU", baskent: "BİSSAU", kita: "AFRİKA" },
+            { ulke: "GRENADA", baskent: "SAİNT GEORGE'S", kita: "KUZEY VE ORTA AMERİKA" },
+            { ulke: "GRÖNLAND", baskent: "NUUK", kita: "KUZEY VE ORTA AMERİKA" },
+            { ulke: "GUADELOUPE", baskent: "BASSE-TERRE", kita: "KUZEY VE ORTA AMERİKA" },
+            { ulke: "GUAM", baskent: "HAGATNA", kita: "AVUSTRALYA / OKYANUSYA" },
+            { ulke: "GUATEMALA", baskent: "GUATEMALA ŞEHRİ", kita: "KUZEY VE ORTA AMERİKA" },
+            { ulke: "GUEMSEY", baskent: "SAİNT PETER PORT", kita: "AVRUPA" },
+            { ulke: "GUYANA", baskent: "GEORGETOWN", kita: "GÜNEY AMERİKA" },
+            { ulke: "GÜNEY AFRİKA", baskent: "CAPE TOWN", kita: "AFRİKA" },
+            { ulke: "GÜNEY GEORGİA VE GÜNEY SANDWİCH ADALARI", baskent: "GRYTVİKEN", kita: "ANTARKTİKA" },
+            { ulke: "GÜNEY KORE", baskent: "SEUL", kita: "ASYA" },
+            { ulke: "GÜNEY SUDAN", baskent: "JUBA", kita: "AFRİKA" },
+            { ulke: "GÜRCİSTAN", baskent: "TİFLİS", kita: "ASYA" },
+            { ulke: "HAİTİ", baskent: "PORT-AU-PRİNCE", kita: "KUZEY VE ORTA AMERİKA" },
+            { ulke: "HİNDİSTAN", baskent: "YENİ DELHİ", kita: "ASYA" },
+            { ulke: "HOLLANDA", baskent: "AMSTERDAM", kita: "AVRUPA" },
+            { ulke: "HONDURAS", baskent: "TEGUCİGALPA", kita: "KUZEY VE ORTA AMERİKA" },
+            { ulke: "HIRVATİSTAN", baskent: "ZAGREB", kita: "AVRUPA" },
+            { ulke: "IRAK", baskent: "BAĞDAT", kita: "ASYA" },
+            { ulke: "İNGİLİZ VİRGİN ADALARI", baskent: "ROAD TOWN", kita: "KUZEY VE ORTA AMERİKA" },
+            { ulke: "İRAN", baskent: "TAHRAN", kita: "ASYA" },
+            { ulke: "İRLANDA", baskent: "DUBLİN", kita: "AVRUPA" },
+            { ulke: "İSPANYA", baskent: "MADRİD", kita: "AVRUPA" },
+            { ulke: "İSRAİL", baskent: "KUDÜS", kita: "ASYA" },
+            { ulke: "İSVEÇ", baskent: "STOCKHOLM", kita: "AVRUPA" },
+            { ulke: "İSVİÇRE", baskent: "BERN", kita: "AVRUPA" },
+            { ulke: "İTALYA", baskent: "ROMA", kita: "AVRUPA" },
+            { ulke: "İZLANDA", baskent: "REYKJAVİK", kita: "AVRUPA" },
+            { ulke: "JAMAİKA", baskent: "KİNGSTON", kita: "KUZEY VE ORTA AMERİKA" },
+            { ulke: "JAPONYA", baskent: "TOKYO", kita: "ASYA" },
+            { ulke: "JERSEY", baskent: "SAİNT HELİER", kita: "AVRUPA" },
+            { ulke: "KAMBOÇYA", baskent: "PHNOM PENH", kita: "ASYA" },
+            { ulke: "KAMERUN", baskent: "YAOUNDE", kita: "AFRİKA" },
+            { ulke: "KANADA", baskent: "OTTAWA", kita: "KUZEY VE ORTA AMERİKA" },
+            { ulke: "KARADAĞ", baskent: "PODGORİCA", kita: "AVRUPA" },
+            { ulke: "KATAR", baskent: "DOHA", kita: "ASYA" },
+            { ulke: "KAZAKİSTAN", baskent: "ASTANA", kita: "ASYA" },
+            { ulke: "KENYA", baskent: "NAİROBİ", kita: "AFRİKA" },
+            { ulke: "KİRİBATİ", baskent: "TARAWA", kita: "AVUSTRALYA / OKYANUSYA" },
+            { ulke: "KOLOMBİYA", baskent: "BOGOTA", kita: "GÜNEY AMERİKA" },
+            { ulke: "KOMORLAR", baskent: "MORONİ", kita: "AFRİKA" },
+            { ulke: "KONGO", baskent: "BRAZZAVİLLE", kita: "AFRİKA" },
+            { ulke: "KONGO, DEMOKRATİK CUMHURİYETİ", baskent: "KİNSHASA", kita: "AFRİKA" },
+            { ulke: "KOSOVA", baskent: "PRİŞTİNE", kita: "AVRUPA" },
+            { ulke: "KOSTA RİKA", baskent: "SAN JOSE", kita: "KUZEY VE ORTA AMERİKA" },
+            { ulke: "KUVEYT", baskent: "KUVEYT", kita: "ASYA" },
+            { ulke: "KUZEY KORE", baskent: "PYONGYANG", kita: "ASYA" },
+            { ulke: "KUZEY MAKEDONYA", baskent: "ÜSKÜP", kita: "AVRUPA" },
+            { ulke: "KUZEY MARİANA ADALARI", baskent: "SAİPAN", kita: "AVUSTRALYA / OKYANUSYA" },
+            { ulke: "KÜBA", baskent: "HAVANA", kita: "KUZEY VE ORTA AMERİKA" },
+            { ulke: "KIBRIS", baskent: "LEFKOŞA", kita: "ASYA" },
+            { ulke: "KIRGIZİSTAN", baskent: "BİŞKEK", kita: "ASYA" },
+            { ulke: "LAOS", baskent: "VİENTİANE", kita: "ASYA" },
+            { ulke: "LESOTHO", baskent: "MASERU", kita: "AFRİKA" },
+            { ulke: "LETONYA", baskent: "RİGA", kita: "AVRUPA" },
+            { ulke: "LİBERYA", baskent: "MONROVİA", kita: "AFRİKA" },
+            { ulke: "LİBYA", baskent: "TRABLUS", kita: "AFRİKA" },
+            { ulke: "LİHTENŞTAYN", baskent: "VADUZ", kita: "AVRUPA" },
+            { ulke: "LİTVANYA", baskent: "VİLNİUS", kita: "AVRUPA" },
+            { ulke: "LÜBNAN", baskent: "BEYRUT", kita: "ASYA" },
+            { ulke: "LÜKSEMBURG", baskent: "LÜKSEMBURG", kita: "AVRUPA" },
+            { ulke: "MACARİSTAN", baskent: "BUDAPEŞTE", kita: "AVRUPA" },
+            { ulke: "MADAGASKAR", baskent: "ANTANANARİVO", kita: "AFRİKA" },
+            { ulke: "MALAWİ", baskent: "LİLONGWE", kita: "AFRİKA" },
+            { ulke: "MALDİVLER", baskent: "MALE", kita: "ASYA" },
+            { ulke: "MALEZYA", baskent: "KUALA LUMPUR", kita: "ASYA" },
+            { ulke: "MALİ", baskent: "BAMAKO", kita: "AFRİKA" },
+            { ulke: "MALTA", baskent: "VALLETTA", kita: "AVRUPA" },
+            { ulke: "MAN ADASI", baskent: "DOUGLAS", kita: "AVRUPA" },
+            { ulke: "MARTİNİK", baskent: "FORT-DE-FRANCE", kita: "KUZEY VE ORTA AMERİKA" },
+            { ulke: "MARŞAL ADALARI", baskent: "MAJURO", kita: "AVUSTRALYA / OKYANUSYA" },
+            { ulke: "MAURİTİUS", baskent: "PORT LOUİS", kita: "AFRİKA" },
+            { ulke: "MAYOTTE", baskent: "MAMOUDZOU", kita: "AFRİKA" },
+            { ulke: "MEKSİKA", baskent: "MEXİCO CİTY", kita: "KUZEY VE ORTA AMERİKA" },
+            { ulke: "MİKRONEZYA FEDERAL DEVLETLERİ", baskent: "PALİKİR", kita: "AVUSTRALYA / OKYANUSYA" },
+            { ulke: "MOLDOVA", baskent: "KİŞİNEV", kita: "AVRUPA" },
+            { ulke: "MONAKO", baskent: "MONAKO", kita: "AVRUPA" },
+            { ulke: "MONTSERRAT", baskent: "PLYMOUTH", kita: "KUZEY VE ORTA AMERİKA" },
+            { ulke: "MORİTANYA", baskent: "NOUAKCHOTT", kita: "AFRİKA" },
+            { ulke: "MOZAMBİK", baskent: "MAPUTO", kita: "AFRİKA" },
+            { ulke: "MOĞOLİSTAN", baskent: "ULAN BATUR", kita: "ASYA" },
+            { ulke: "MYANMAR", baskent: "PYİNMANA", kita: "ASYA" },
+            { ulke: "MISIR", baskent: "KAHİRE", kita: "AFRİKA" },
+            { ulke: "NAMİBYA", baskent: "WİNDHOEK", kita: "AFRİKA" },
+            { ulke: "NAURU", baskent: "YAREN", kita: "AVUSTRALYA / OKYANUSYA" },
+            { ulke: "NEPAL", baskent: "KATMANDU", kita: "ASYA" },
+            { ulke: "NİJER", baskent: "NİAMEY", kita: "AFRİKA" },
+            { ulke: "NİJERYA", baskent: "ABUJA", kita: "AFRİKA" },
+            { ulke: "NİKARAGUA", baskent: "MANAGUA", kita: "KUZEY VE ORTA AMERİKA" },
+            { ulke: "NİUE", baskent: "ALOFİ", kita: "AVUSTRALYA / OKYANUSYA" },
+            { ulke: "NORFOLK ADASI", baskent: "KİNGSTON", kita: "AVUSTRALYA / OKYANUSYA" },
+            { ulke: "NORVEÇ", baskent: "OSLO", kita: "AVRUPA" },
+            { ulke: "ORTA AFRİKA CUMHURİYETİ", baskent: "BANGUİ", kita: "AFRİKA" },
+            { ulke: "PAKİSTAN", baskent: "İSLAMABAD", kita: "ASYA" },
+            { ulke: "PALAU", baskent: "MELEKEOK", kita: "AVUSTRALYA / OKYANUSYA" },
+            { ulke: "PANAMA", baskent: "PANAMA", kita: "KUZEY VE ORTA AMERİKA" },
+            { ulke: "PAPUA YENİ GİNE", baskent: "PORT MORESBY", kita: "AVUSTRALYA / OKYANUSYA" },
+            { ulke: "PARAGUAY", baskent: "ASUNCİON", kita: "GÜNEY AMERİKA" },
+            { ulke: "PERU", baskent: "LİMA", kita: "GÜNEY AMERİKA" },
+            { ulke: "PİTCAİRN ADALARI", baskent: "ADAMSTOWN", kita: "AVUSTRALYA / OKYANUSYA" },
+            { ulke: "POLONYA", baskent: "VARŞOVA", kita: "AVRUPA" },
+            { ulke: "PORTEKİZ", baskent: "LİZBON", kita: "AVRUPA" },
+            { ulke: "PORTO RİKO", baskent: "SAN JUAN", kita: "KUZEY VE ORTA AMERİKA" },
+            { ulke: "REUNİON", baskent: "SAİNT-DENİS", kita: "AFRİKA" },
+            { ulke: "ROMANYA", baskent: "BÜKREŞ", kita: "AVRUPA" },
+            { ulke: "RUANDA", baskent: "KİGALİ", kita: "AFRİKA" },
+            { ulke: "RUSYA FEDERASYONU", baskent: "MOSKOVA", kita: "AVRUPA" },
+            { ulke: "SAİNT BARTHELEMY", baskent: "GUSTAVİA", kita: "KUZEY VE ORTA AMERİKA" },
+            { ulke: "SAİNT HELENA", baskent: "JAMESTOWN", kita: "AFRİKA" },
+            { ulke: "SAİNT KİTTS VE NEVİS", baskent: "BASSETERRE", kita: "KUZEY VE ORTA AMERİKA" },
+            { ulke: "SAİNT LUCİA", baskent: "CASTRİES", kita: "KUZEY VE ORTA AMERİKA" },
+            { ulke: "SAİNT VİNCENT VE GRENADİNLER", baskent: "KİNGSTOWN", kita: "KUZEY VE ORTA AMERİKA" },
+            { ulke: "SAİNT-MARTİN", baskent: "MARİGOT", kita: "KUZEY VE ORTA AMERİKA" },
+            { ulke: "SAMOA", baskent: "APİA", kita: "AVUSTRALYA / OKYANUSYA" },
+            { ulke: "SAN MARİNO", baskent: "SAN MARİNO", kita: "AVRUPA" },
+            { ulke: "SAO TOME VE PRİNCİPE", baskent: "SAO TOME", kita: "AFRİKA" },
+            { ulke: "SENEGAL", baskent: "DAKAR", kita: "AFRİKA" },
+            { ulke: "SEYŞELLER", baskent: "VİCTORİA", kita: "AFRİKA" },
+            { ulke: "SİERRA LEONE", baskent: "FREETOWN", kita: "AFRİKA" },
+            { ulke: "SİNGAPUR", baskent: "SİNGAPUR", kita: "ASYA" },
+            { ulke: "SLOVAKYA", baskent: "BRATİSLAVA", kita: "AVRUPA" },
+            { ulke: "SLOVENYA", baskent: "LJUBLJANA", kita: "AVRUPA" },
+            { ulke: "SOLOMON ADALARI", baskent: "HONİARA", kita: "AVUSTRALYA / OKYANUSYA" },
+            { ulke: "SOMALİ", baskent: "MOGADİŞU", kita: "AFRİKA" },
+            { ulke: "SRİ LANKA", baskent: "SRİ JAYEWARDENEPURA KOTTE", kita: "ASYA" },
+            { ulke: "SUDAN", baskent: "HARTUM", kita: "AFRİKA" },
+            { ulke: "SURİNAM", baskent: "PARAMARİBO", kita: "GÜNEY AMERİKA" },
+            { ulke: "SURİYE", baskent: "ŞAM", kita: "ASYA" },
+            { ulke: "SUUDİ ARABİSTAN", baskent: "RİYAD", kita: "ASYA" },
+            { ulke: "SVALBARD VE JAN MAYEN", baskent: "LONGYEARBYEN", kita: "AVRUPA" },
+            { ulke: "SVAZİLAND", baskent: "MBABANE", kita: "AFRİKA" },
+            { ulke: "SIRBİSTAN", baskent: "BELGRAD", kita: "AVRUPA" },
+            { ulke: "TACİKİSTAN", baskent: "DUŞANBE", kita: "ASYA" },
+            { ulke: "TANZANYA", baskent: "DODOMA", kita: "AFRİKA" },
+            { ulke: "TAYLAND", baskent: "BANGKOK", kita: "ASYA" },
+            { ulke: "TAYVAN", baskent: "TAİPEİ", kita: "ASYA" },
+            { ulke: "TOGO", baskent: "LOME", kita: "AFRİKA" },
+            { ulke: "TONGA", baskent: "NUKU'ALOFA", kita: "AVUSTRALYA / OKYANUSYA" },
+            { ulke: "TRİNİDAD VE TOBAGO", baskent: "İSPANYA LİMANI", kita: "KUZEY VE ORTA AMERİKA" },
+            { ulke: "TUNUS", baskent: "TUNUS", kita: "AFRİKA" },
+            { ulke: "TURKS VE CAİCOS ADALARI", baskent: "COCKBURN TOWN", kita: "KUZEY VE ORTA AMERİKA" },
+            { ulke: "TUVALU", baskent: "FUNAFUTİ", kita: "AVUSTRALYA / OKYANUSYA" },
+            { ulke: "TÜRKİYE", baskent: "ANKARA", kita: "ASYA" },
+            { ulke: "TÜRKMENİSTAN", baskent: "AŞKABAT", kita: "ASYA" },
+            { ulke: "UGANDA", baskent: "KAMPALA", kita: "AFRİKA" },
+            { ulke: "UKRAYNA", baskent: "KİEV", kita: "AVRUPA" },
+            { ulke: "UMMAN", baskent: "MASKAT", kita: "ASYA" },
+            { ulke: "URUGUAY", baskent: "MONTEVİDEO", kita: "GÜNEY AMERİKA" },
+            { ulke: "VANUATU", baskent: "PORT-VİLA", kita: "AVUSTRALYA / OKYANUSYA" },
+            { ulke: "VATİKAN", baskent: "VATİKAN ŞEHRİ", kita: "AVRUPA" },
+            { ulke: "VENEZUELA", baskent: "KARAKAS", kita: "GÜNEY AMERİKA" },
+            { ulke: "VİETNAM", baskent: "HA NOİ", kita: "ASYA" },
+            { ulke: "VİRGİN ADALARI", baskent: "CHARLOTTE AMALİE", kita: "KUZEY VE ORTA AMERİKA" },
+            { ulke: "WALLİS VE FUTUNA", baskent: "MATA'UTU", kita: "AVUSTRALYA / OKYANUSYA" },
+            { ulke: "YEMEN", baskent: "SANAA", kita: "ASYA" },
+            { ulke: "YENİ KALEDONYA", baskent: "NOUMEA", kita: "AVUSTRALYA / OKYANUSYA" },
+            { ulke: "YENİ ZELANDA", baskent: "WELLİNGTON", kita: "AVUSTRALYA / OKYANUSYA" },
+            { ulke: "YUNANİSTAN", baskent: "ATİNA", kita: "AVRUPA" },
+            { ulke: "ZAMBİYA", baskent: "LUSAKA", kita: "AFRİKA" },
+            { ulke: "ZİMBABVE", baskent: "HARARE", kita: "AFRİKA" },
+            { ulke: "ÇAD", baskent: "N'DJAMENA", kita: "AFRİKA" },
+            { ulke: "ÇEKYA", baskent: "PRAG", kita: "AVRUPA" },
+            { ulke: "ÇİN", baskent: "PEKİN", kita: "ASYA" },
+            { ulke: "ÖZBEKİSTAN", baskent: "TAŞKENT", kita: "ASYA" },
+            { ulke: "ÜRDÜN", baskent: "AMMAN", kita: "ASYA" },
+            { ulke: "ŞİLİ", baskent: "SANTİAGO", kita: "GÜNEY AMERİKA" }
+        ];
+
+        let gameState = {
+            questions: [],
+            currentIndex: 0,
+            score: 0,
+            correctCount: 0,
+            wrongCount: 0,
+            isAnswered: false,
+            selectedContinent: "Tümü"
+        };
+
+        window.onload = function() {
+            document.getElementById('total-country-count').innerText = ulkelerVeritabani.length;
+            updateQuestionButtons();
+        };
+
+        function onContinentChange() {
+            gameState.selectedContinent = document.getElementById('continent-select').value;
+            updateQuestionButtons();
+        }
+
+        function updateQuestionButtons() {
+            const container = document.getElementById('question-buttons-container');
+            container.innerHTML = '';
+
+            let filteredList = gameState.selectedContinent === "Tümü" 
+                ? ulkelerVeritabani 
+                : ulkelerVeritabani.filter(item => item.kita === gameState.selectedContinent);
+
+            const totalCount = filteredList.length;
+            
+            // Örnek soru adetleri (5, 10, 20, 50 veya kıtadaki toplam ülke sayısı)
+            let standardLimits = [5, 10, 20, 50].filter(limit => limit < totalCount);
+            standardLimits.push(totalCount);
+            // Benzersiz sıralama
+            let options = [...new Set(standardLimits)].sort((a, b) => a - b);
+
+            options.forEach((limit, index) => {
+                const btn = document.createElement('button');
+                let isAll = (limit === totalCount);
+                btn.className = isAll 
+                    ? "py-3 px-4 bg-gradient-to-r from-indigo-600 to-cyan-600 hover:from-indigo-500 hover:to-cyan-500 rounded-xl font-semibold transition-all shadow-lg active:scale-95 col-span-2 sm:col-span-1"
+                    : "py-3 px-4 bg-slate-800 hover:bg-indigo-600 border border-slate-700 hover:border-indigo-500 rounded-xl font-semibold transition-all shadow-md active:scale-95";
+                
+                btn.innerText = isAll ? `Tümü (${limit})` : `${limit} Soru`;
+                btn.onclick = () => startGame(limit);
+                container.appendChild(btn);
+            });
+        }
+
+        function startGame(limit) {
+            let filteredList = gameState.selectedContinent === "Tümü" 
+                ? [...ulkelerVeritabani] 
+                : ulkelerVeritabani.filter(item => item.kita === gameState.selectedContinent);
+
+            let shuffled = filteredList.sort(() => 0.5 - Math.random());
+            
+            gameState.questions = shuffled.slice(0, Math.min(limit, shuffled.length));
+            gameState.currentIndex = 0;
+            gameState.score = 0;
+            gameState.correctCount = 0;
+            gameState.wrongCount = 0;
+            gameState.isAnswered = false;
+
+            document.getElementById('setup-screen').classList.add('hidden');
+            document.getElementById('result-screen').classList.add('hidden');
+            document.getElementById('quiz-screen').classList.remove('hidden');
+
+            loadQuestion();
+        }
+
+        function loadQuestion() {
+            gameState.isAnswered = false;
+            const currentItem = gameState.questions[gameState.currentIndex];
+
+            // Update header & info
+            document.getElementById('question-counter').innerText = `Soru ${gameState.currentIndex + 1}/${gameState.questions.length}`;
+            document.getElementById('current-score').innerText = gameState.score;
+            document.getElementById('question-country').innerText = currentItem.ulke;
+            document.getElementById('question-continent').innerText = currentItem.kita;
+
+            // Generate options (Wrong options from entire database for variety)
+            const allCapitals = ulkelerVeritabani.map(i => i.baskent);
+            const wrongCapitals = allCapitals.filter(c => c !== currentItem.baskent);
+            
+            let options = [];
+            while(options.length < 3) {
+                let randomCap = wrongCapitals[Math.floor(Math.random() * wrongCapitals.length)];
+                if(!options.includes(randomCap)) {
+                    options.push(randomCap);
+                }
+            }
+            options.push(currentItem.baskent);
+            options.sort(() => 0.5 - Math.random());
+
+            const container = document.getElementById('options-container');
+            container.innerHTML = '';
+
+            options.forEach((opt, index) => {
+                const btn = document.createElement('button');
+                btn.className = "p-4 bg-slate-800 hover:bg-slate-700/80 border border-slate-700 rounded-xl text-left font-medium transition-all shadow-md active:scale-98 flex items-center justify-between group";
+                btn.innerHTML = `
+                    <span class="flex items-center gap-3">
+                        <span class="w-7 h-7 rounded-lg bg-slate-700 group-hover:bg-indigo-600 flex items-center justify-center text-xs font-bold text-slate-300 group-hover:text-white transition-colors">${['A', 'B', 'C', 'D'][index]}</span>
+                        <span class="text-white">${opt}</span>
+                    </span>
+                `;
+                btn.onclick = () => checkAnswer(opt, currentItem.baskent, btn);
+                container.appendChild(btn);
+            });
+        }
+
+        function checkAnswer(selected, correct, selectedBtn) {
+            if(gameState.isAnswered) return;
+            gameState.isAnswered = true;
+
+            const buttons = document.getElementById('options-container').children;
+
+            if (selected === correct) {
+                selectedBtn.className = "p-4 bg-emerald-600/20 border border-emerald-500 rounded-xl text-left font-medium flex items-center justify-between shadow-md transition-all";
+                gameState.score += 10;
+                gameState.correctCount++;
+            } else {
+                selectedBtn.className = "p-4 bg-rose-600/20 border border-rose-500 rounded-xl text-left font-medium flex items-center justify-between shadow-md transition-all";
+                gameState.wrongCount++;
+                
+                for(let btn of buttons) {
+                    if(btn.innerText.includes(correct)) {
+                        btn.className = "p-4 bg-emerald-600/20 border border-emerald-500 rounded-xl text-left font-medium flex items-center justify-between shadow-md transition-all";
+                    }
+                }
+            }
+
+            for(let btn of buttons) {
+                btn.style.pointerEvents = 'none';
+            }
+
+            setTimeout(() => {
+                gameState.currentIndex++;
+                if(gameState.currentIndex < gameState.questions.length) {
+                    loadQuestion();
+                } else {
+                    showResults();
+                }
+            }, 1200);
+        }
+
+        function showResults() {
+            document.getElementById('quiz-screen').classList.add('hidden');
+            document.getElementById('result-screen').classList.remove('hidden');
+
+            document.getElementById('res-correct').innerText = gameState.correctCount;
+            document.getElementById('res-wrong').innerText = gameState.wrongCount;
+            document.getElementById('res-score').innerText = gameState.score;
+            document.getElementById('result-continent-info').innerText = `Seçilen Kıta: ${gameState.selectedContinent}`;
+
+            const total = gameState.questions.length;
+            const percentage = (gameState.correctCount / total) * 100;
+            let msg = "";
+
+            if(percentage === 100) {
+                msg = "🌟 Mükemmel! Tüm soruları doğru bildiniz, gerçek bir coğrafya uzmanısınız!";
+            } else if(percentage >= 75) {
+                msg = "👏 Harika iş! Coğrafya bilginiz oldukça yüksek seviyede.";
+            } else if(percentage >= 50) {
+                msg = "👍 Fena değil! Biraz daha pratikle kusursuz olabilirsin.";
+            } else {
+                msg = "📚 Pratik yapmak mükemmelleştirir! Tekrar deneyerek skorunu artırabilirsin.";
+            }
+
+            document.getElementById('performance-message').innerText = msg;
+        }
+
+        function resetApp() {
+            document.getElementById('result-screen').classList.add('hidden');
+            document.getElementById('setup-screen').classList.remove('hidden');
+        }
+    </script>
+</body>
+</html>
